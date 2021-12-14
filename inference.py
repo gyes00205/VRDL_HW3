@@ -96,7 +96,7 @@ def parse_config():
 
 if __name__ == '__main__':
     args = parse_config()
-    register_coco_instances("my_dataset_train", {}, "data/train_correct.json", "data/train")
+    register_coco_instances("my_dataset_train", {}, "data/train.json", "data/train")
     register_coco_instances("my_dataset_val", {}, "data/val.json", "data/val")
     metadata = MetadataCatalog.get("my_dataset_train")
     dataset_dicts = DatasetCatalog.get("my_dataset_train")
@@ -127,7 +127,7 @@ if __name__ == '__main__':
         out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
         print(len(outputs["instances"]))
         cv2.imshow('pred', out.get_image()[:, :, ::-1])
-        cv2.waitKey(2000)
+        cv2.imwrite(i, out.get_image()[:, :, ::-1])
         results.extend(instances_to_coco_json(outputs["instances"].to("cpu"), image_dict[i]))
     cv2.destroyAllWindows()
     json_object = json.dumps(results, indent=4)
