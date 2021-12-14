@@ -1,0 +1,9 @@
+.ipynb_checkpoints
+answer.json
+answer.zip
+output
+mask_rcnn_R_50
+mask_rcnn_X_101
+mask_rcnn_X_101_small_anchor
+script.ipynb
+data/val/
