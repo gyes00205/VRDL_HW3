@@ -1,14 +1,13 @@
 # Some basic setup:
 # Setup detectron2 logger
-# python inference.py --yaml=mask_rcnn_X_101_32x8d_FPN_3x.yaml --model=mask_rcnn_X_101/model_final.pth
 import detectron2
 from detectron2.utils.logger import setup_logger
-setup_logger()
-
 # import some common libraries
 import numpy as np
-import os, json, cv2, random
-
+import os
+import json
+import cv2
+import random
 # import some common detectron2 utilities
 from detectron2 import model_zoo
 from detectron2.engine import DefaultPredictor
@@ -22,11 +21,15 @@ from detectron2.utils.visualizer import ColorMode
 from detectron2.structures import Boxes, BoxMode, pairwise_iou
 import pycocotools.mask as mask_util
 import argparse
+setup_logger()
 
 
 def instances_to_coco_json(instances, img_id):
     """
-    Dump an "Instances" object to a COCO-format json that's used for evaluation.
+    Reference:
+        detectron2 coco evaluator
+        https://detectron2.readthedocs.io/en/latest/_modules/detectron2/evaluation/coco_evaluation.html
+    Dump an "Instances" object to a COCO-format json that's used for evaluation
 
     Args:
         instances (Instances):
@@ -96,15 +99,19 @@ def parse_config():
 
 if __name__ == '__main__':
     args = parse_config()
-    register_coco_instances("my_dataset_train", {}, "data/train.json", "data/train")
-    register_coco_instances("my_dataset_val", {}, "data/val.json", "data/val")
+    register_coco_instances(
+        "my_dataset_train",
+        {},
+        "data/train.json",
+        "data/train"
+    )
     metadata = MetadataCatalog.get("my_dataset_train")
     dataset_dicts = DatasetCatalog.get("my_dataset_train")
 
     cfg = get_cfg()
     cfg.merge_from_file(args.yaml)
     cfg.MODEL.WEIGHTS = args.model  # path to the model we just trained
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.1   # set a custom testing threshold
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.1
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1  # 1 classes (data, fig, hazelnut)
     cfg.TEST.DETECTIONS_PER_IMAGE = 2000
@@ -127,8 +134,13 @@ if __name__ == '__main__':
         out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
         print(len(outputs["instances"]))
         cv2.imshow('pred', out.get_image()[:, :, ::-1])
+        cv2.waitKey(10)
         cv2.imwrite(i, out.get_image()[:, :, ::-1])
-        results.extend(instances_to_coco_json(outputs["instances"].to("cpu"), image_dict[i]))
+        results.extend(
+            instances_to_coco_json(
+                outputs["instances"].to("cpu"),
+                image_dict[i])
+        )
     cv2.destroyAllWindows()
     json_object = json.dumps(results, indent=4)
     with open("answer.json", "w") as outfile:
